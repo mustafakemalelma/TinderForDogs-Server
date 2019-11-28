@@ -8,11 +8,11 @@ export default gql`
     email: String!
     password: String!
     name: String!
-    profilePic: Upload!
-    pictures: [Upload!]
+    profilePic: String!
+    pictures: [String!]
     selfSummary: String
     breed: String!
-    age: Int!
+    age: String!
     size: String!
     weight: Int!
     address: String!
@@ -29,6 +29,11 @@ export default gql`
     matchDate: Date!
   }
 
+  type LikeResponse {
+    successful: Boolean!
+    isAMatch: Boolean
+  }
+
   type Message {
     id: ID!
     owner: ID!
@@ -38,9 +43,27 @@ export default gql`
 
   type Query {
     dogs: [Dog!]!
+
+    loginDog(email: String!, password: String!): Dog!
   }
 
   type Mutation {
-    registerDog(email: String!, password: String!): ID!
+    registerDog(
+      email: String!
+      password: String!
+      name: String!
+      profilePic: Upload!
+      selfSummary: String
+      breed: String!
+      age: String!
+      size: String!
+      weight: Int!
+      address: String!
+    ): ID!
+
+    invalidateTokens: Boolean!
+
+    like(likedId: ID!): LikeResponse!
+    dislike(dislikedId: ID!): Boolean!
   }
 `;
