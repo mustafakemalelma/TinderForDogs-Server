@@ -1,5 +1,11 @@
 import { gql } from "apollo-server-express";
 
+/**
+ *
+ * GRAPHQL Types that the application accepts as queries, mutations
+ * or variables
+ */
+
 export default gql`
   scalar Date
 

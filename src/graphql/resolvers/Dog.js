@@ -9,13 +9,20 @@ import Dog from "../../models/Dog";
 import { createTokens } from "../../utils";
 import Match from "../../models/Match";
 
+//This is the graphql queries for Dog Type
 export const DogQueries = {
+  //this is the endpoint for login
+  //checks if email exist
+  //checks if password correct
+  //if all correct it sets the cookies for access token, refresh token
+  //and sends the dog object
   loginDog: async (_, { email, password }, { res }) => {
     if (!isEmail(email) || !isLength(password, { min: 8, max: 16 })) throw new Error("You have invalid fields!");
 
     const foundDog = await Dog.findOne({ email }).exec();
     if (!foundDog) throw new Error("There is no such dog!");
 
+    //Comparing the password with the hashed one in the database
     const isPasswordCorrect = await bcrypt.compare(password, foundDog.get("password"));
     if (!isPasswordCorrect) throw new Error("Wrong password!");
 
@@ -26,6 +33,7 @@ export const DogQueries = {
     return foundDog;
   },
 
+  //An endpoint for returning the profile of logged in dog
   me: async (_, __, { req }) => {
     if (!req.userId) throw new AuthenticationError("You must be logged in!");
 
@@ -35,6 +43,7 @@ export const DogQueries = {
     return dog;
   },
 
+  //An endpoint for retrieving all dogs that registered
   dogs: async (_, __, { req }) => {
     const dogs = await Dog.find().exec();
 
@@ -44,6 +53,8 @@ export const DogQueries = {
     return dogs;
   },
 
+  //An endpoint for retrieving the candidate dogs for the logged in dog.
+  //It filters previously liked and disliked dogs
   candidateDogs: async (_, __, { req }) => {
     if (!req.userId) throw new AuthenticationError("You must be logged in!");
 
@@ -56,7 +67,9 @@ export const DogQueries = {
   }
 };
 
+//This is the graphql mutations for Dog Type
 export const DogMutations = {
+  //An endpoint for registering a new dog to database
   registerDog: async (_, { email, password, name, profilePic, selfSummary, breed, age, size, weight, address }) => {
     //VALIDATION
     if (isEmpty(name) || isEmpty(breed) || isEmpty(age) || isEmpty(size) || isEmpty(address))
@@ -71,6 +84,7 @@ export const DogMutations = {
     const isExist = await Dog.findOne({ email }).exec();
     if (isExist) throw new Error("This dog is already exist");
 
+    //Getting the profile picture
     const { createReadStream, filename } = await profilePic;
     const profilePicPath = name + "_" + filename;
     await new Promise(res =>
@@ -79,6 +93,7 @@ export const DogMutations = {
         .on("close", res)
     );
 
+    //Hashing the password before writing to database for security
     const hashedPassword = await bcrypt.hash(password, parseInt(process.env.BCRYPT_SALT_ROUND, 10));
 
     const dog = new Dog({
@@ -99,6 +114,8 @@ export const DogMutations = {
     return dog.id;
   },
 
+  //An endpoint for invalidating refresh token so that the user not getting a new access token when it expires.
+  //Used for logout.
   invalidateTokens: async (_, __, { req }) => {
     if (!req.userId) throw new AuthenticationError("You must be logged in!");
 
@@ -111,6 +128,8 @@ export const DogMutations = {
     return true;
   },
 
+  //An endpoint for liking a dog.
+  //If other dog also likes the dog that made the request, it will create match object.
   like: async (_, { likedId }, { req }) => {
     if (!req.userId) throw new AuthenticationError("You must be logged in!");
 
@@ -134,6 +153,8 @@ export const DogMutations = {
 
     return { successful: true, isAMatch };
   },
+
+  //An endpoint for disliking a dog.
   dislike: async (_, { dislikedId }, { req }) => {
     if (!req.userId) throw new AuthenticationError("You must be logged in!");
 

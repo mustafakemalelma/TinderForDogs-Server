@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import Dog from "./models/Dog";
 
+//This function for creating the access and refresh token for
+//provided dog.
 export const createTokens = dog => {
   const accessToken = jwt.sign({ id: dog.id }, process.env.ACCESS_TOKEN_PRIVATE, { expiresIn: "15min" });
   const refreshToken = jwt.sign(
@@ -12,6 +14,9 @@ export const createTokens = dog => {
   return { accessToken, refreshToken };
 };
 
+//This function is for getting the user id from the request's cookies if there is any.
+//It also check if the access token expired but refresh token is still valid
+//then it will create new access and refresh token, then sends them.
 export const getUserFromToken = async (req, res) => {
   const accessToken = req.cookies["access-token"];
   const refreshToken = req.cookies["refresh-token"];

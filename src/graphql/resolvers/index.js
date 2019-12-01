@@ -12,6 +12,7 @@ export default {
     ...DogMutations
   },
 
+  //A graphql scalar type for saving date objects
   Date: new GraphQLScalarType({
     name: "Date",
     description: "Date custom scalar type",

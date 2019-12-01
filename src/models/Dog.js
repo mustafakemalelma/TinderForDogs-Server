@@ -1,5 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
+//Dog Database Schema
+
 const DogSchema = new Schema({
   refreshTokenCount: { type: Number, default: 0 },
   email: { type: String, required: true },
