@@ -44,6 +44,10 @@ export default gql`
   type Query {
     dogs: [Dog!]!
 
+    candidateDogs: [Dog!]!
+
+    me: Dog!
+
     loginDog(email: String!, password: String!): Dog!
   }
 

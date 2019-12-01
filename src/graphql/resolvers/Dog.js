@@ -20,10 +20,19 @@ export const DogQueries = {
     if (!isPasswordCorrect) throw new Error("Wrong password!");
 
     const { accessToken, refreshToken } = createTokens(foundDog);
-    res.cookie("access-token", accessToken, { expires: new Date(Date.now() + 15 * 60 * 1000) });
+    res.cookie("access-token", accessToken, { expires: new Date(Date.now() + 5 * 1000) });
     res.cookie("refresh-token", refreshToken, { expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) });
 
     return foundDog;
+  },
+
+  me: async (_, __, { req }) => {
+    if (!req.userId) throw new AuthenticationError("You must be logged in!");
+
+    const dog = await Dog.findById(req.userId).exec();
+    if (!dog) throw new Error("No such user id");
+
+    return dog;
   },
 
   dogs: async (_, __, { req }) => {
@@ -33,6 +42,17 @@ export const DogQueries = {
     dogs.forEach(el => el.set("profilePic", imageUrl + el.get("profilePic")));
 
     return dogs;
+  },
+
+  candidateDogs: async (_, __, { req }) => {
+    if (!req.userId) throw new AuthenticationError("You must be logged in!");
+
+    const me = await Dog.findById(req.userId).exec();
+
+    const dogs = await Dog.find().exec();
+    return dogs.filter(
+      el => el.id !== me.id && !me.get("likes").includes(el.id) && !me.get("dislikes").includes(el.id)
+    );
   }
 };
 
@@ -44,6 +64,8 @@ export const DogMutations = {
 
     if (!isEmail(email) || !isLength(password, { min: 8, max: 16 }) || weight === 0)
       throw new Error("You have invalid fields!");
+
+    if (!profilePic) throw new Error("You must provide 1 photo");
 
     //IS EXIST
     const isExist = await Dog.findOne({ email }).exec();

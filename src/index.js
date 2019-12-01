@@ -2,6 +2,7 @@ import { ApolloServer } from "apollo-server-express";
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import typeDefs from "./graphql/typeDefs";
@@ -21,8 +22,9 @@ const startServer = async () => {
   });
 
   app.use(express.static("static"));
+  app.use(cors({ origin: "http://localhost:3000", credentials: true }));
   app.use(cookieParser());
-  server.applyMiddleware({ app });
+  server.applyMiddleware({ app, cors: false });
 
   try {
     await mongoose.connect(process.env.DB_CONNECT, {
